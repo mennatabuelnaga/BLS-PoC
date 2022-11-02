@@ -1,0 +1,12 @@
+[package]
+name = "seda-sigs"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+near-sdk = "4.0.0"
+bls-signatures = { version = "0.13.0", default-features = false, features= ['pairing']}
+rand_chacha = {version = "0.3.1"}
