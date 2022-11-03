@@ -5,9 +5,7 @@ use near_primitives::types::BlockReference;
 use near_primitives::borsh::BorshSerialize;
 use serde_json::json;
 use tokio::time;
-use bls_signatures::{PrivateKey, Serialize};
-use rand_chacha::ChaCha8Rng;
-use rand_chacha::rand_core::SeedableRng;
+use blsttc::SecretKey;
 use near_jsonrpc_client::{methods, JsonRpcClient};
 
 #[tokio::main]
@@ -53,9 +51,8 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         _ => Err("failed to extract current nonce")?,
     };
 
-    let mut rng = ChaCha8Rng::seed_from_u64(12);
 
-    let sk = PrivateKey::generate(&mut rng);
+    let sk = SecretKey::random();
 
     let pk = sk.public_key();
 
@@ -69,21 +66,21 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("pk: {:?}", pk);
     println!("sig: {:?}", sig);
 
-    println!("pk_bytes: {:?}", pk.as_bytes());
-    println!("sig_bytes: {:?}", sig.as_bytes());
-    println!("sig_bytes: {:?}", sig.as_bytes());
+    println!("pk_bytes: {:?}", pk.to_bytes());
+    println!("sig_bytes: {:?}", sig.to_bytes());
+    println!("sig_bytes: {:?}", sig.to_bytes());
 
 
-    let sig_bytes = sig.as_bytes();
+    let sig_bytes: Vec<u8> = sig.to_bytes().to_vec();
 
-    let pk_bytes= pk.as_bytes();
+    let pk_bytes: Vec<u8> = pk.to_bytes().to_vec();
 
 
     let transaction = Transaction {
         signer_id: signer.account_id.clone(),
         public_key: signer.public_key.clone(),
         nonce: current_nonce + 1,
-        receiver_id: "bls.mennat0.testnet".parse()?,
+        receiver_id: "blsttc.mennat0.testnet".parse()?,
         block_hash: access_key_query_response.block_hash,
         actions: vec![Action::FunctionCall(FunctionCallAction {
             method_name: "verify_sig".to_string(),

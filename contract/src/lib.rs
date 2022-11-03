@@ -1,19 +1,20 @@
 
-use bls_signatures::{Signature, PublicKey, Serialize};
 use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::near_bindgen;
+use blsttc::{Signature, PublicKey};
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
 pub struct VerifySignature;
-// deployment storage ~ 22 NEAR
 #[near_bindgen]
 impl VerifySignature {
     #[payable]
-    pub fn verify_sig(&mut self, message: Vec<u8>, signature: Vec<u8>, public_key: Vec<u8>) -> bool {
-        let sig = Signature::from_bytes(&signature[..]).expect("couldn't read signature");
-        let pk = PublicKey::from_bytes(&public_key[..]).expect("couldn't read pk");
-        pk.verify(sig, message)
+    pub fn verify_sig(&mut self, message: Vec<u8>, signature: Vec<u8>, public_key: Vec<u8>) -> bool {   
+        let signature: [u8; 96] = signature.try_into().expect("invalid signature");
+        let public_key: [u8; 48] = public_key.try_into().expect("invalid pk");
+        let sig = Signature::from_bytes(signature).expect("couldn't read signature");
+        let pk = PublicKey::from_bytes(public_key).expect("couldn't read pk");
+        pk.verify(&sig, message)
         
     }
 }
@@ -25,10 +26,7 @@ mod tests {
     use near_sdk::test_utils::VMContextBuilder;
     use near_sdk::{testing_env, VMContext};
 
-    use bls_signatures::{PrivateKey, Serialize};
-    use rand_chacha::ChaCha8Rng;
-    use rand_chacha::rand_core::SeedableRng;
-
+    use blsttc::{PublicKey, SecretKey};
 
 
     fn get_context(is_view: bool) -> VMContext {
@@ -46,9 +44,8 @@ mod tests {
 
 
 
-        let mut rng = ChaCha8Rng::seed_from_u64(12);
 
-        let sk = PrivateKey::generate(&mut rng);
+        let sk = SecretKey::random();
 
         let pk = sk.public_key();
 
@@ -66,9 +63,9 @@ mod tests {
         println!("sig_bytes: {:?}", sig.as_bytes());
 
 
-        let sig_bytes = sig.as_bytes();
+        let sig_bytes = sig.to_bytes().to_vec();
 
-        let pk_bytes= pk.as_bytes();
+        let pk_bytes= pk.to_bytes().to_vec();
         let verified = contract.verify_sig(message, sig_bytes, pk_bytes);
 
 
