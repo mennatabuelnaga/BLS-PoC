@@ -7,6 +7,10 @@ edition = "2021"
 crate-type = ["cdylib"]
 
 [dependencies]
-near-sdk = "4.0.0"
-bls-signatures = { version = "0.13.0", default-features = false, features= ['pairing']}
-rand_chacha = {version = "0.3.1"}
+near-sdk = "4.1.0-pre.3"
+zeropool-bn = {  version = "0.5.11", features = [] }
+rand = "0.8.5"
+bls-signatures-rs = {path = "./bls-signatures-rs"}
+hex = {version = "0.4.3", features = ["serde"]}
+near-sys = "0.2.0"
+getrandom = {version = "0.2.8", features = ["js"]}
