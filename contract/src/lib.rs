@@ -3,11 +3,11 @@ use near_sdk::borsh::{self, BorshDeserialize, BorshSerialize};
 use near_sdk::near_bindgen;
 use near_sys::alt_bn128_pairing_check;
 use zeropool_bn::{G2, Group, G1};
-mod helpers;
-
+use bls_sig::hash_to_try_and_increment;
 
 #[near_bindgen]
 #[derive(Default, BorshDeserialize, BorshSerialize)]
+// deployment storage ~19 NEAR
 pub struct VerifySignature;
 #[near_bindgen]
 impl VerifySignature {
@@ -39,7 +39,7 @@ impl VerifySignature {
 
     #[payable]
     pub fn verify_sig2(&mut self, message: Vec<u8>, signature: Vec<u8>, public_key: Vec<u8>) -> bool {
-        let msg_hash: G1 = self.hash_to_try_and_increment(&message).expect("couldn't hash msg to G1");
+        let msg_hash: G1 = hash_to_try_and_increment(&message).expect("couldn't hash msg to G1");
         let hash_g1: [u8; 64] = msg_hash.try_to_vec().expect("couldn't unwrap hash_g1").try_into().expect("**couldn't unwrap hash_g1");
         let pk_g2: [u8; 128] = public_key.try_into().expect("couldn't unwrap pk_g2");
         let sig_g1: [u8; 64] = signature.try_into().expect("couldn't unwrap sig_g1");
@@ -69,11 +69,10 @@ mod tests {
     use std::ops::Mul;
 
     use super::*;
-    use bls_signatures_rs::MultiSignature;
-    use bls_signatures_rs::bn256::Bn256;
     use near_sdk::test_utils::VMContextBuilder;
     use near_sdk::{testing_env, VMContext};
     use zeropool_bn::Fr;    
+    use bls_sig::hash_to_try_and_increment;
     fn get_context(is_view: bool) -> VMContext {
         VMContextBuilder::new()
             .signer_account_id("bob_near".parse().unwrap())
@@ -94,7 +93,7 @@ mod tests {
         let sk: Fr = Fr::random(rng);
         let pk_g2_vec = (G2::one().mul(sk)).try_to_vec().expect("pk");
         let msg = "hello".as_bytes();
-        let msg_hash_g1 = Bn256.hash_to_try_and_increment2(msg).unwrap();
+        let msg_hash_g1 = hash_to_try_and_increment(msg).unwrap();
         let msg_hash_g1_vec = msg_hash_g1.try_to_vec().unwrap();
         
         let sig_g1 = msg_hash_g1.mul(sk);

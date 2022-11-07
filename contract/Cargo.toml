@@ -1,5 +1,5 @@
 [package]
-name = "seda-sigs"
+name = "seda-altbn128_sigs"
 version = "0.1.0"
 edition = "2021"
 
@@ -11,8 +11,7 @@ near-sdk = "4.1.0-pre.3"
 near-sys = "0.2.0"
 zeropool-bn = {  version = "0.5.11", features = [] }
 getrandom = {version = "0.2.8", features = ["js"]}
-sha2 = "0.10.6"
+bls-sig = {path = "./bls-sig"}
 
 [dev-dependencies]
-bls-signatures-rs = {path = "./bls-signatures-rs"}
 rand = "0.8.5"
